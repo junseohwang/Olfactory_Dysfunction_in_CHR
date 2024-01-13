@@ -31,8 +31,11 @@
     │   └── T2
     │       └── T2.nii.gz
     ├── subject_02
+    │       :    
     ├── subject_n
+    │
     ├── Pipelines-master
+    │
     └── workbench
 
 ```
