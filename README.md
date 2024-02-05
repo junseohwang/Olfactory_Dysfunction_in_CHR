@@ -76,6 +76,7 @@ flowchart LR
     end
 ```
 
+
 ### 2. 1st (out of 4) recon-all stage
 In this step, FreeSurfer's autorecon1 pipeline is invoked, which includes process steps 1-5 of Autorecon Processing Stages.
 1.  Motion Correction and Conform
