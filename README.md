@@ -130,7 +130,7 @@ recon-all -s Subject finished without error
 ```
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph PreFreesurfer
         subgraph T1w
 	        T1w_acpc_dc_restore_1mm.nii.gz;
