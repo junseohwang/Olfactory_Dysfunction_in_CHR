@@ -75,3 +75,83 @@ flowchart TD
 	    end
     end
 ```
+
+### 2. 1st (out of 4) recon-all stage
+FreeSurfer's autorecon1 pipeline is invoked, which includes process steps 1-5 of Autorecon Processing Stages.
+1.  Motion Correction and Conform
+2.  NU (Non-Uniform intensity normalization)
+3.  Talairach transform computation
+4.  Intensity Normalization 1
+5. ~~Skull Strip~~
+
+The skullstrip option is excluded due to reliability issues of poor FreeSurfer mri_em_register registrations with skull on.
+
+- Convert T1w image in NIfTI format **T1w_acpc_dc_restore_1mm.nii.gz** to the FreeSurfer-specific MGZ format **001.mgz**.
+- No motion correction is performed for **001.mgz** since there is only one image. Instead, **001.mgz** is copied to **orig.mgz**
+	> No motion correction is done when there are multiple source volumes. This step will correct for small motions between them and then average them together.
+	
+- Perform Talairach transformation from **orig.mgz** to the MNI305 atlas using `talairach_avi`. The output affine transformation file is saved as **talairach.xfm**
+- Perform non-uniform intensity correction on **orig.mgz** using `nu_correct`. Four iterations of nu_correct are run. The result is saved as **nu.mgz**
+- Perform intensity normalization on **nu.mgz** using `mri_normalize`. The normalization is done to achieve a mean intensity of 110 in the white matter. The output is saved as **T1.mgz**.
+
+Terminal output:
+```
+Subject FREESURFER : Running autorecon1 steps with the exception of -skullstrip
+		.
+		.
+		.
+#--------------------------------------------
+#@# MotionCor
+		.
+		.
+		.
+#--------------------------------------------
+#@# Talairach
+		.
+		.
+		.
+#--------------------------------------------
+#@# Nu Intensity Correction
+		.
+		.
+		.
+#--------------------------------------------
+#@# Intensity Normalization
+		.
+		.
+		.
+#------------------------------------------
+
+Started at 
+Ended   at 
+#@#%# recon-all-run-time-hours 
+recon-all -s Subject finished without error
+
+```
+
+```mermaid
+flowchart TD
+    subgraph PreFreesurfer
+        subgraph T1w
+	        T1w_acpc_dc_restore_1mm.nii.gz;
+	    end
+    end
+    subgraph Freesurfer
+        subgraph mri
+	        subgraph orig
+		        001.mgz
+	        end
+	        subgraph transform
+		        talairach.xfm
+	        end
+	        orig.mgz
+	        nu.mgz
+	        T1.mgz
+	    end
+    end
+    T1w_acpc_dc_restore_1mm.nii.gz ---> |Convert to Freesurfer format|001.mgz;
+    001.mgz ---> |Motion correction|orig.mgz
+    orig.mgz ---> |Non-uniformity correction|nu.mgz
+    nu.mgz ---> |Intensity normalization|T1.mgz
+    orig.mgz ---> |Talairach transformation|talairach.xfm
+```
