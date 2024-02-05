@@ -3,6 +3,8 @@
 -   Jun Seo Hwang,  [junseo97@snu.ac.kr](mailto:junseo97@snu.ac.kr)
 
 ## Prerequisite
+- FSL
+- Freesurfer(ver 5.3.0)
 - Pipeline-master
 - workbench
 - raw data directory
@@ -46,3 +48,10 @@
 ```
 
 
+## PreFreesurfer
+
+## Freesurfer
+The main goals of this pipeline are to segment the volume into predefined structures (including the subcortical parcels used in CIFTI), reconstruct white and pial cortical surfaces, and perform FreeSurfer’s standard folding-based surface registration to their surface atlas (fsaverage).
+
+1. Downsample to 1mm
+Limitation with recon-all is that it cannot handle images of higher than 1 mm isotropic resolution or structural scans of greater than 256 × 256 × 256 voxels. The structural scans which exceed these limits must therefore be downsampled to 1 mm with spline interpolation prior to launching recon-all.
