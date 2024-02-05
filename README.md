@@ -66,7 +66,7 @@ Terminal output:
 Subject FREESURFER : Making Spline Interpolated Downsample to 1mm
 ```
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph PreFreesurfer
         subgraph T1w
 	        T1w_acpc_dc_restore.nii.gz ---> |Downsampling to 1mm|T1w_acpc_dc_restore_1mm.nii.gz;
