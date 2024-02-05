@@ -77,7 +77,7 @@ flowchart LR
 ```
 
 ### 2. 1st (out of 4) recon-all stage
-FreeSurfer's autorecon1 pipeline is invoked, which includes process steps 1-5 of Autorecon Processing Stages.
+In this step, FreeSurfer's autorecon1 pipeline is invoked, which includes process steps 1-5 of Autorecon Processing Stages.
 1.  Motion Correction and Conform
 2.  NU (Non-Uniform intensity normalization)
 3.  Talairach transform computation
@@ -86,7 +86,7 @@ FreeSurfer's autorecon1 pipeline is invoked, which includes process steps 1-5 of
 
 The skullstrip option is excluded due to reliability issues of poor FreeSurfer mri_em_register registrations with skull on.
 
-- Convert T1w image in NIfTI format **T1w_acpc_dc_restore_1mm.nii.gz** to the FreeSurfer-specific MGZ format **001.mgz**.
+- Convert downsampled T1w image in NIfTI format **T1w_acpc_dc_restore_1mm.nii.gz** to the FreeSurfer-specific MGZ format **001.mgz**.
 - No motion correction is performed for **001.mgz** since there is only one image. Instead, **001.mgz** is copied to **orig.mgz**
 	> No motion correction is done when there are multiple source volumes. This step will correct for small motions between them and then average them together.
 	
@@ -154,4 +154,36 @@ flowchart LR
     orig.mgz ---> |Non-uniformity correction|nu.mgz
     nu.mgz ---> |Intensity normalization|T1.mgz
     orig.mgz ---> |Talairach transformation|talairach.xfm
+```
+
+
+### 3. Generate brain mask
+HCP Phase II T1w data was not robustly registered using the linear registration within FreeSurfer that precedes FreeSurfer's brain extraction. To address this, the internal brain mask in FreeSurfer is generated aided using the initial brain mask generated in PreFreeSurfer before the registration. The brain mask is created by skull stripping and the removal of non-brain tissue from the T1 volume. The process involves utilizing the atlas (**RB_all_2008-03-26.gca**) to enhance surface correction ensuring more robust brain extraction.
+
+- Convert downsampled T1w brain image in NIfTI format **T1w_acpc_dc_restore_brain_1mm.nii.gz** to the FreeSurfer-specific MGZ format **brainmask.mgz**.
+- Register nu-corrected T1w image **nu.mgz** to automatic subcortical segmentation atlas using `mri_em_register`. The output transform is saved as **talairach_with_skull**.
+- Strip skull of T1w image **T1.mgz** using `mri_watershed`. The atlas and transform obtained were used to correct the surface. The final brain mask output is overwritten as **brainamsk.mgz**
+
+
+```mermaid
+flowchart LR
+    subgraph PreFreesurfer
+        subgraph T1w
+	        T1w_acpc_dc_restore_brain_1mm.nii.gz;
+	    end
+    end
+    subgraph Freesurfer
+	    subgraph mri
+	        brainmask.mgz;
+	        nu.mgz;
+	        T1.mgz
+		        subgraph transform
+		        talairach_with_skull.lta
+		        end
+	    end
+    end
+    T1w_acpc_dc_restore_brain_1mm.nii.gz ---> |Convert to Freesurfer format|brainmask.mgz;
+    nu.mgz ---> |Linear registeration|talairach_with_skull.lta
+    talairach_with_skull.lta ---> |Skull strip|brainmask.mgz
+    T1.mgz ---> |Skull strip|brainmask.mgz
 ```
