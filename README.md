@@ -188,3 +188,226 @@ flowchart LR
     talairach_with_skull.lta ---> |Skull strip|brainmask.mgz
     T1.mgz ---> |Skull strip|brainmask.mgz
 ```
+
+
+### 4. 2nd (out of 4) recon-all stage
+In this step, FreeSurfer's autorecon2 pipeline is invoked, which includes process steps 6-23 of Autorecon Processing Stages.
+6. EM register (linear volumetric registration)
+7. CA Intensity Normalization
+8. CA Non-linear Volumetric Registration
+9. Remove Neck
+10. LTA with Skull
+11. CA Label (Volumetric Labeling, ie Aseg) and Statistics
+12. Intensity Normalization 2
+13. White matter segmentation
+14. Edit WM With ASeg
+15. Fill
+16. Tessellation
+17. Smooth1
+18. Inflate1
+19.  QSphere
+20. Automatic Topology Fixer
+21. Final Surfs
+22.  ~~Smooth2~~
+23. ~~Inflate2~~
+
+The smooth2 and inflate 2 option is excluded.
+
+
+- Perform linear registration of nu-corrected T1w image **nu.mgz** to automatic subcortical segmentation atlas using `mri_em_register`. **brainmask.mgz** obtained in the previous stage is used to guide the registration. The output transform is saved as **talairach.lta**.
+- Perform intensity normalization based on the GCA (generic cortical atlas) model. The result is saved as **norm.mgz**.
+- Perform non-linear registration of **norm.mgz** to the GCA atlas using `mri_ca_register`. The output transform is saved as **talairach.m3z**
+- Remove neck region from **nu.mgz** with a radius of 25 mm. The result is saved as **nu_noneck.mgz**
+- Perform linear registration of **nu_noneck.mgz** to GCA atlas that includes the skull. The initial transformation from the previous stage **talairach.lta** is used as a starting point. The output transform is saved as **talairach_with_skull_2.lta**.
+- Label subcortical structures of **norm.mgz** based on the GCA model. The labeled output is saved as **aseg.mgz**
+- Perform intensity normalization using only the brain as the input (so that it has to be done after the skull strip). The result is saved as **brain.mgz**.
+- Perform white matter segmentation on **brain.mgz**. The output is saved as **wm.mgz**.
+- Create the subcortical binarized volume from **wm.mgz** for generating the original surface. It involves cutting the midbrain from the cerebrum and the hemispheres from each other. The output is saved as **filled.mgz**.
+- Create triangular mesh that represents the two-dimensional original surface of the interface between the white matter and grey matter from **filled.mgz** using `mri_tessellate`. The results are saved as **lh.orig.nofix** and **rh.orig.nofix**.
+- Smoothing is applied to the surface mesh **lh.orig.nofix** and **rh.orig.nofix** using `mris_smooth`. The results are saved as **lh.smoothwm** and **rh.smoothwm** 
+- Inflate the surface mesh **lh.smoothwm** and **rh.smoothwm** outward to `mris_inflate` create a more inflated representation while minimizing metric distortion to preserve distances and areas. The results are saved as **lh.inflated.nofix** and **rh.inflated.nofix**
+- Perform a quasi-homeomorphic spherical transformation of the inflated surface **lh.inflated.nofix** to localize topological defects for subsequent topology fixing using`mris_sphere`. The results are saved as **lh.qsphere.nofix**
+- Identify and remove topological defects such as holes in a filled hemisphere with **lh.qsphere.nofix** using `mris_fix_topology` .The results are saved as lh.orig
+- Generate final surface files for cortical and white matter surfaces from **filled.mgz** and original surfaces **lh.orig** and  **rh.orig** using`mris_make_surfaces`. The cortical surfaces are saved as **lh.pial** and **rh.pial** and the white matter surfaces are saved as **lh.white** and **rh.white**.
+
+
+Terminal output:
+```
+Subject FREESURFER : Running autorecon2 steps with few exceptions
+		.
+		.
+		.
+#-------------------------------------
+#@# EM Registration
+		.
+		.
+		.
+#--------------------------------------
+#@# CA Normalize
+		.
+		.
+		.
+#--------------------------------------
+#@# CA Reg
+		.
+		.
+		.
+#--------------------------------------
+#@# CA Reg Inv
+		.
+		.
+		.
+#--------------------------------------
+#@# Remove Neck
+		.
+		.
+		.
+#--------------------------------------
+#@# SkullLTA
+		.
+		.
+		.
+#-------------------------------------- 
+#@# SubCort Seg
+		.
+		.
+		.
+#--------------------------------------
+#@# Merge ASeg
+		.
+		.
+		.
+#--------------------------------------------
+#@# Intensity Normalization2
+		.
+		.
+		.
+#--------------------------------------------
+#@# Mask BFS
+    	.
+		.
+		.
+#--------------------------------------------
+#@# WM Segmentation
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Fill
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Tessellate lh
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Smooth1 lh
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Inflation1 lh	
+    	.
+		.
+		.
+#--------------------------------------------
+#@# QSphere lh		
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Fix Topology lh
+	    .
+		.
+		.
+#--------------------------------------------
+#@# Make White Surf lh
+	    .
+		.
+		.
+#--------------------------------------------
+#@# Tessellate rh
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Smooth1 rh
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Inflation1 rh	
+    	.
+		.
+		.
+#--------------------------------------------
+#@# QSphere rh		
+    	.
+		.
+		.
+#--------------------------------------------
+#@# Fix Topology rh
+	    .
+		.
+		.
+#--------------------------------------------
+#@# Make White Surf rh
+	    .
+		.
+		.		
+Started at 
+Ended   at 
+#@#%# recon-all-run-time-hours 
+recon-all -s Subject finished without error
+
+```
+
+```mermaid
+flowchart TD
+    subgraph Freesurfer
+        subgraph mri
+	        brainmask.mgz
+	        subgraph transform
+		        talairach.lta
+		        talairach.m3z
+		        talairach_with_skull_2.lta
+	        end
+	        nu.mgz
+	        nu.mgz ---> |Intensity normalization|norm.mgz
+	        nu.mgz ---> |Remove neck|nu_noneck.mgz
+	        norm.mgz ---> |Label subcortical structures|aseg.mgz
+	        aseg.mgz ---> |Intensity normalization|brain.mgz
+	        brain.mgz ---> |White matter segmentation|wm.mgz
+	        wm.mgz ---> |Fill|filled.mgz 
+	    end
+	    subgraph surf
+		    lh.orig.nofix ---> |Smoothing|lh.smoothwm
+		    rh.orig.nofix ---> |Smoothing|rh.smoothwm
+		    lh.smoothwm ---> |Inflation|lh.inflated.nofix
+		    rh.smoothwm ---> |Inflation|rh.inflated.nofix
+		    lh.inflated.nofix ---> |QSphere transformation|lh.qsphere.nofix
+		    rh.inflated.nofix ---> |QSphere transformation|rh.qsphere.nofix
+		    lh.qsphere.nofix ---> |Fix topology|lh.orig
+		    rh.qsphere.nofix ---> |Fix topology|rh.orig
+		    lh.orig ---> |Create final white surface|lh.white
+		    lh.orig ---> |Create final pial surface|lh.pial
+		    rh.orig ---> |Create final white surface|rh.white
+		    rh.orig ---> |Create final pial surface|rh.pial
+		    
+	    end
+    end
+    nu.mgz ---> |Linear registration|talairach.lta
+    brainmask.mgz ---> |Linear registration|talairach.lta
+    norm.mgz ---> |Non-linear registration|talairach.m3z
+    talairach.m3z ---> nu_noneck.mgz
+    nu_noneck.mgz ---> |Linear registration|talairach_with_skull_2.lta
+    talairach.lta ---> talairach_with_skull_2.lta
+    filled.mgz ---> |Tessellate|lh.orig.nofix
+	filled.mgz ---> |Tessellate|rh.orig.nofix
+    filled.mgz ---> lh.white
+	filled.mgz ---> lh.pial
+	filled.mgz ---> rh.white
+    filled.mgz ---> rh.pial
+```
