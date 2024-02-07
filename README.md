@@ -192,6 +192,7 @@ flowchart TD
 
 ### 4. 2nd (out of 4) recon-all stage
 In this step, FreeSurfer's autorecon2 pipeline is invoked, which includes process steps 6-23 of Autorecon Processing Stages.
+
 6. EM register (linear volumetric registration)
 7. CA Intensity Normalization
 8. CA Non-linear Volumetric Registration
@@ -208,10 +209,7 @@ In this step, FreeSurfer's autorecon2 pipeline is invoked, which includes proces
 19.  QSphere
 20. Automatic Topology Fixer
 21. Final Surfs
-22.  ~~Smooth2~~
-23. ~~Inflate2~~
 
-The smooth2 and inflate 2 option is excluded.
 
 
 - Perform linear registration of nu-corrected T1w image **nu.mgz** to automatic subcortical segmentation atlas using `mri_em_register`. **brainmask.mgz** obtained in the previous stage is used to guide the registration. The output transform is saved as **talairach.lta**.
