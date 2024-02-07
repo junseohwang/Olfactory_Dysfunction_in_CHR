@@ -191,7 +191,7 @@ flowchart TD
 
 
 ### 4. 2nd (out of 4) recon-all stage
-In this step, FreeSurfer's autorecon2 pipeline is invoked, which includes process steps 6-23 of Autorecon Processing Stages.
+In this step, FreeSurfer's autorecon2 pipeline is invoked, which includes process steps 6-21 of Autorecon Processing Stages.
 
 6. EM register (linear volumetric registration)
 7. CA Intensity Normalization
