@@ -66,7 +66,7 @@ Terminal output:
 Subject FREESURFER : Making Spline Interpolated Downsample to 1mm
 ```
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph PreFreesurfer
         subgraph T1w
 	        T1w_acpc_dc_restore.nii.gz ---> |Downsampling to 1mm|T1w_acpc_dc_restore_1mm.nii.gz;
@@ -131,7 +131,7 @@ recon-all -s Subject finished without error
 ```
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph PreFreesurfer
         subgraph T1w
 	        T1w_acpc_dc_restore_1mm.nii.gz;
@@ -167,7 +167,7 @@ HCP Phase II T1w data was not robustly registered using the linear registration 
 
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph PreFreesurfer
         subgraph T1w
 	        T1w_acpc_dc_restore_brain_1mm.nii.gz;
