@@ -430,3 +430,149 @@ In this step, high-resolution white matter surfaces are generated and the regist
 - Perform registration from high-resolution original T1w image **T1w_hires.nii.gz** back to downsampled 1mm T1w image **orig.mgz** using `tkregister2`. The resulting matrix is saved as **1mm2hires.dat**.
 - Transform deformed surfaces back into the original FreeSurfer space (1mm space) to ensure compatibility with the rest of the FreeSurfer pipeline and further analysis. The outputs are saved as **lh.white** and **rh.white**
 - Copy deformed outputs of **lh.curv.deformed** **lh.area.deformed** **lh.cortex.deformed.label** **rh.curv.deformed** **rh.area.deformed** **rh.cortex.deforemd.label** to their default FreeSurfer file names as **lh.curv** **lh.area** **lh.cortex.label** **rh.curv** **rh.area** **rh.cortex.label**.
+
+
+### 5. 3rd (out of 4) recon-all stage
+In this step, FreeSurfer's autorecon2 pipeline is invoked, which includes process steps 6-23 of Autorecon Processing Stages.
+22. smooth2
+23. Inflate2
+24. Spherical Mapping
+25. Spherical Registration
+26. ~~Spherical Registration, Contralateral hemisphere~~
+27. Map average curvature to subject
+28. Cortical Parcellation - Desikan_Killiany and Christophe (Labeling)
+
+-   Smoothing is applied to the white matter surfaces  **lh.white** and **rh.white**  using  `mris_smooth`. The results are saved as  **lh.smoothwm** and  **rh.smoothwm**
+- Inflate the smoothed white matter surface **lh.smoothwm**  and  **rh.smoothwm** outward using `mris_inflate`, expanding the surface while minimizing metric distortion. The results are saved as  **lh.inflated**  and  **rh.inflated**
+- Compute the statistics such as mean, variance, max and min curvature values for a curvature file **lh.smoothwm** and **rh.smoothwm** using `mris_curvature_stats`. The outputs are saved as **lh.curv.stats** and **rh.curv.stats**
+- Transform the inflated surface **lh.inflated** and **rh.inflated** into a spherical form while minimizing metric distortion. This step is necessary to register the surface to the spherical atlas. The outputs are saved as **lh.sphere** and **rh.sphere**.
+- Register the spherical brain surface **lh.sphere** and **rh.sphere** to a spherical atlas. The outputs are saved **lh.sphere.reg** and **rh.sphere.reg**.
+- Compute the Jacobian determinant to measure the distortion of the white matter surface during the registration process to the spherical atlas. The outputs are saved as **lh.jacobian_white** and **rh.jacobian_white**.
+- Resample the average curvature from a standard atlas onto the subject's brain surface **lh.sphere.reg** and **rh.sphere.reg**. The outputs are saved as **lh.avg_curv** and **rh.avg_curv**.
+- Assign neuroanatomical labels to different regions of the cortical surface based on both geometric information derived from the cortical model (sulcus and curvature) and neuroanatomical conventions using `mris_ca_label`. The resulting cortical parcellation is saved as **lh.aparc.annot** and **rh.aparc.annot**.
+Terminal output:
+```
+Subject FREESURFER : Runnung intermediate recon-all steps
+		.
+		.
+		.
+#--------------------------------------------
+#@# Smooth2 lh
+		.
+		.
+		.
+#--------------------------------------------
+#@# Inflation2 lh
+		.
+		.
+		.
+#--------------------------------------
+#@# Curvature Stats lh
+		.
+		.
+		.
+#--------------------------------------
+#@# Sphere lh
+		.
+		.
+		.
+#--------------------------------------
+#@# Surf Reg lh
+		.
+		.
+		.
+#--------------------------------------
+#@# Jacobian white lh
+		.
+		.
+		.
+#-------------------------------------- 
+#@# AvgCurv lh
+		.
+		.
+		.
+#--------------------------------------
+#@# Cortical Parc lh
+		.
+		.
+		.
+#--------------------------------------------
+#@# Smooth2 rh
+		.
+		.
+		.
+#--------------------------------------------
+#@# Inflation2 rh
+		.
+		.
+		.
+#--------------------------------------
+#@# Curvature Stats rh
+		.
+		.
+		.
+#--------------------------------------
+#@# Sphere rh
+		.
+		.
+		.
+#--------------------------------------
+#@# Surf Reg rh
+		.
+		.
+		.
+#--------------------------------------
+#@# Jacobian white rh
+		.
+		.
+		.
+#-------------------------------------- 
+#@# AvgCurv rh
+		.
+		.
+		.
+#--------------------------------------
+#@# Cortical Parc rh
+		.
+		.
+		.
+Started at 
+Ended   at 
+#@#%# recon-all-run-time-hours 
+recon-all -s Subject finished without error
+
+```
+```mermaid
+flowchart  TD
+    subgraph Freesurfer
+	    subgraph label
+            lh.aparc.annot
+            rh.aparc.annot
+
+	    end
+        subgraph surf
+            lh.white --> |Smoothing|lh.smoothwm
+            rh.white --> |Smoothing|rh.smoothwm
+            lh.smoothwm --> |Inflation|lh.inflated
+            rh.smoothwm --> |Inflation|rh.inflated
+            lh.inflated --> |Spherical transformation|lh.sphere
+            rh.inflated --> |Spherical transformation|rh.sphere
+            lh.sphere --> |Registration to spherical atlas|lh.sphere.reg
+            rh.sphere --> |Registration to spherical atlas|rh.sphere.reg
+            lh.white --> lh.jacobian_white
+            rh.white --> rh.jacobian_white
+            lh.sphere.reg --> |Compute Jacobian determinant|lh.jacobian_white
+            rh.sphere.reg --> |Compute Jacobian determinant|rh.jacobian_white
+            lh.sphere.reg --> |Resample average curvature|lh.avg_curv
+            rh.sphere.reg --> |Resample average curvature|rh.avg_curv
+        end
+	    subgraph stats
+            lh.curv.stats
+            rh.curv.stats
+	    end
+    end
+    lh.smoothwm --> |Compute curvature stats|lh.curv.stats
+    rh.smoothwm --> |Compute curvature stats|rh.curv.stats
+    lh.sphere.reg --> |Cortical parcellation|lh.aparc.annot
+    rh.sphere.reg --> |Cortical parcellation|rh.aparc.annot
+```
