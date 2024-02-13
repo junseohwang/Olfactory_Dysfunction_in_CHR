@@ -738,4 +738,66 @@ flowchart  TD
     end
 ```
 
+
+### 2.  Intensity normalization 
+The diffusion preprocessing starts by normalizing the intensity across all diffusion-weighted images by rescaling them with the mean baseline b0 image intensity. This ensures consistency and normalization of intensities across all volumes in each series.
+
+- Extract baseline b0 volume and calculate the mean intensity of the volume. The results are saved as **LR_BLIP_input_b0_0000~0005.nii.gz**, **RL_BLIP_input_b0_0000~0005.nii.gz**, **LR_EMPTY_B1000_input_b0_0000.nii.gz**, **LR_EMPTY_B2000_input_b0_0000.nii.gz**, **LR_EMPTY_B3000_input_b0_0000.nii.gz**. The mean intensity serves as a reference for normalization across all series. The mean b0 image is saved as **LR_BLIP_input_mean.nii.gz**, **RL_BLIP_input_mean.nii.gz**, **LR_EMPTY_B1000_input_mean.nii.gz**, **LR_EMPTY_B2000_input_mean.nii.gz**, **LR_EMPTY_B3000_input_mean.nii.gz**, 
+- Rescale the intensity of each series using the mean baseline b0 intensity. The results are saved as **LR_BLIP_input.nii.gz**, **RL_BLIP_input.nii.gz**, **LR_EMPTY_B1000_input.nii.gz**, **LR_EMPTY_B2000_input.nii.gz**, **LR_EMPTY_B3000_input.nii.gz**
+- Replace the original diffusion-weighted images with the rescaled one. The original images are saved as **LR_BLIP_input_orig.nii.gz**, **RL_BLIP_input_orig.nii.gz**, **LR_EMPTY_B1000_input_orig.nii.gz**, **LR_EMPTY_B2000_input_orig.nii.gz**, **LR_EMPTY_B3000_input_orig.nii.gz**.
 	
+Terminal output:
+```
+Processing subject: "Subject"
+"Subject" Diffusion Basic Preprocessing : Total readout time is .031609 secs
+"Subject" Diffusion Basic Preprocessing : Rescaling series to ensure consistency across baseline intensities
+
+```
+```mermaid
+
+flowchart  TD
+    subgraph Preprocess_Diffusion
+        subgraph rawdata
+            LR_BLIP_input.nii.gz --> |Extract b0 images|LR_BLIP_input_b0_0000.nii.gz
+            LR_BLIP_input.nii.gz --> |Extract b0 images|LR_BLIP_input_b0_0001.nii.gz
+            LR_BLIP_input.nii.gz --> |Extract b0 images|LR_BLIP_input_b0_0002.nii.gz
+            LR_BLIP_input.nii.gz --> |Extract b0 images|LR_BLIP_input_b0_0003.nii.gz
+            LR_BLIP_input.nii.gz --> |Extract b0 images|LR_BLIP_input_b0_0004.nii.gz
+            LR_BLIP_input.nii.gz --> |Extract b0 images|LR_BLIP_input_b0_0005.nii.gz
+            RL_BLIP_input.nii.gz --> |Extract b0 images|RL_BLIP_input_b0_0000.nii.gz
+            RL_BLIP_input.nii.gz --> |Extract b0 images|RL_BLIP_input_b0_0001.nii.gz
+            RL_BLIP_input.nii.gz --> |Extract b0 images|RL_BLIP_input_b0_0002.nii.gz
+            RL_BLIP_input.nii.gz --> |Extract b0 images|RL_BLIP_input_b0_0003.nii.gz
+            RL_BLIP_input.nii.gz --> |Extract b0 images|RL_BLIP_input_b0_0004.nii.gz
+            RL_BLIP_input.nii.gz --> |Extract b0 images|RL_BLIP_input_b0_0005.nii.gz
+            LR_EMPTY_B1000_input.nii.gz --> |Extract b0 images|LR_EMPTY_B1000_input_b0_0000.nii.gz
+            LR_EMPTY_B2000_input.nii.gz --> |Extract b0 images|LR_EMPTY_B2000_input_b0_0000.nii.gz
+            LR_EMPTY_B3000_input.nii.gz --> |Extract b0 images|LR_EMPTY_B3000_input_b0_0000.nii.gz
+            LR_BLIP_input_b0_0000.nii.gz --> |Calculate mean|LR_BLIP_input_mean.nii.gz
+            LR_BLIP_input_b0_0001.nii.gz --> |Calculate mean|LR_BLIP_input_mean.nii.gz
+            LR_BLIP_input_b0_0002.nii.gz --> |Calculate mean|LR_BLIP_input_mean.nii.gz
+            LR_BLIP_input_b0_0003.nii.gz --> |Calculate mean|LR_BLIP_input_mean.nii.gz
+            LR_BLIP_input_b0_0004.nii.gz --> |Calculate mean|LR_BLIP_input_mean.nii.gz
+            LR_BLIP_input_b0_0005.nii.gz --> |Calculate mean|LR_BLIP_input_mean.nii.gz
+            RL_BLIP_input_b0_0000.nii.gz --> |Calculate mean|RL_BLIP_input_mean.nii.gz
+            RL_BLIP_input_b0_0001.nii.gz --> |Calculate mean|RL_BLIP_input_mean.nii.gz
+            RL_BLIP_input_b0_0002.nii.gz --> |Calculate mean|RL_BLIP_input_mean.nii.gz
+            RL_BLIP_input_b0_0003.nii.gz --> |Calculate mean|RL_BLIP_input_mean.nii.gz
+            RL_BLIP_input_b0_0004.nii.gz --> |Calculate mean|RL_BLIP_input_mean.nii.gz
+            RL_BLIP_input_b0_0005.nii.gz --> |Calculate mean|RL_BLIP_input_mean.nii.gz
+            LR_EMPTY_B1000_input_b0_0000.nii.gz --> |Calculate mean|LR_EMPTY_B1000_input_mean.nii.gz
+            LR_EMPTY_B2000_input_b0_0000.nii.gz --> |Calculate mean|LR_EMPTY_B2000_input_mean.nii.gz
+            LR_EMPTY_B3000_input_b0_0000.nii.gz --> |Calculate mean|LR_EMPTY_B3000_input_mean.nii.gz
+            LR_BLIP_input_mean.nii.gz --> |Rescale intensity|1[LR_BLIP_input.nii.gz]
+            RL_BLIP_input_mean.nii.gz --> |Rescale intensity|2[RL_BLIP_input.nii.gz]
+            LR_EMPTY_B1000_input_mean.nii.gz --> |Rescale intensity|3[LR_EMPTY_B1000_input.nii.gz]
+            LR_EMPTY_B2000_input_mean.nii.gz --> |Rescale intensity|4[LR_EMPTY_B2000_input.nii.gz]
+            LR_EMPTY_B3000_input_mean.nii.gz --> |Rescale intensity|5[LR_EMPTY_B3000_input.nii.gz]
+            LR_BLIP_input.nii.gz --> |Rename|6[LR_BLIP_input_orig.nii.gz]
+            RL_BLIP_input.nii.gz --> |Rename|7[RL_BLIP_input_orig.nii.gz]
+            LR_EMPTY_B1000_input.nii.gz --> |Rename|8[LR_EMPTY_B1000_input_orig.nii.gz]
+            LR_EMPTY_B2000_input.nii.gz --> |Rename|9[LR_EMPTY_B2000_input_orig.nii.gz]
+            LR_EMPTY_B3000_input.nii.gz --> |Rename|10[LR_EMPTY_B3000_input_orig.nii.gz]
+            end
+    end
+```
