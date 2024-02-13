@@ -626,6 +626,14 @@ flowchart  TD
             subgraph transforms
                 1mm2hires.dat
             end
+            subgraph ribbon.postT2.pass1
+                ribbon1(lh.ribbon.nii.gz)
+                ribbon2(rh.ribbon.nii.gz)
+                ribbon3(ribbon.nii.gz)
+                ribbon4(ribbon_s5.nii.gz)
+                ribbon5(T1w_hires.norm_ribbon_myelin.nii.gz)
+                ribbon6(T1w_hires.greynorm_ribbon.nii.gz)
+            end
         end
 	    subgraph surf
             white.deformed --> lh.pial.preT2.pass1
@@ -638,11 +646,11 @@ flowchart  TD
             lh.pial.mgz --> |Preparing surface|lh.pial.nii.gz
             rh.white.mgz --> |Preparing surface|rh.white.nii.gz
             rh.pial.mgz --> |Preparing surface|rh.pial.nii.gz
-            lh.white.nii.gz --> |Create gray matter ribbon|lh.ribbon.nii.gz
-            lh.pial.nii.gz --> |Create gray matter ribbon|lh.ribbon.nii.gz
+            lh.white.nii.gz --> |Create gray matter ribbon|a1(lh.ribbon.nii.gz)
+            lh.pial.nii.gz --> |Create gray matter ribbon|a1(lh.ribbon.nii.gz)
             rh.white.nii.gz --> |Create gray matter ribbon|rh.ribbon.nii.gz
             rh.pial.nii.gz --> |Create gray matter ribbon|rh.ribbon.nii.gz  
-            lh.ribbon.nii.gz --> |Merge|ribbon.nii.gz
+            a1(lh.ribbon.nii.gz) --> |Merge|ribbon.nii.gz
             rh.ribbon.nii.gz --> |Merge|ribbon.nii.gz
             ribbon.nii.gz --> |Smoothing|ribbon_s5.nii.gz
             ribbon.nii.gz --> |Invert|ribbon_inv.nii.gz
@@ -665,6 +673,12 @@ flowchart  TD
     rh.white.nii.gz --> |Create white matter mask|white.nii.gz
     T1w_hires.greynorm.mgz --> |Regenerate pial surface|lh.pial.preT2.pass2
     T1w_hires.greynorm.mgz --> |Regenerate pial surface|rh.pial.preT2.pass2
+    a1 --> |Move|ribbon1
+    rh.ribbon.nii.gz --> |Move|ribbon2
+    ribbon.nii.gz --> |Move|ribbon3
+    ribbon_s5.nii.gz --> |Move|ribbon4
+    T1w_hires.norm_ribbon_myelin.nii.gz --> |Move|ribbon5
+    T1w_hires.greynorm_ribbon.nii.gz --> |Move|ribbon6
 ```
 
 
