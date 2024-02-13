@@ -682,5 +682,60 @@ flowchart  TD
 ```
 
 
+## PreFreesurfer
+
+
+### 1.  Set up a working directory and copy raw data
+-   Create a main directory  **Preprocess_Diffusion**
+-   Within the  **Preprocess_Diffusion**  directory, create three subdirectories:
+    - data
+    - eddy
+    - rawdata
+    - reg
+    - topup
+-   Raw data are copied to **rawdata** directory.
+
+Terminal output:
+```
+Processing subject: "Subject"
+"Subject" Diffusion Basic Preprocessing : Copying raw data to working directory
+
+```
+```
+flowchart  TD
+    subgraph Preprocess_Diffusion
+        subgraph data
+        end
+        subgraph eddy
+        end
+        subgraph rawdata
+            LR_BLIP_input.bval
+            LR_BLIP_input.bvec
+            LR_BLIP_input.nii.gz
+            RL_BLIP_input.bval
+            RL_BLIP_input.bvec
+            RL_BLIP_input.nii.gz
+            LR_EMPTY_B1000_input.bval
+            LR_EMPTY_B1000_input.bvec
+            LR_EMPTY_B1000_input.nii.gz
+            LR_EMPTY_B2000_input.bval
+            LR_EMPTY_B2000_input.bvec
+            LR_EMPTY_B2000_input.nii.gz
+            LR_EMPTY_B3000_input.bval
+            LR_EMPTY_B3000_input.bvec
+            LR_EMPTY_B3000_input.nii.gz
+        end
+        subgraph reg
+        end
+        subgraph topup
+        end
+    end
+    subgraph Preprocess_Structure
+        subgraph T1w
+            subgraph 1[Preprocess_Diffusion]
+            end
+        end
+    end
+```
 
 	
