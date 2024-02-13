@@ -576,3 +576,97 @@ flowchart  TD
     lh.sphere.reg --> |Cortical parcellation|lh.aparc.annot
     rh.sphere.reg --> |Cortical parcellation|rh.aparc.annot
 ```
+
+
+### 6.  Generate high-resolution pial surface
+Just before the pial surfaces are generated, recon-all is stopped again and pial surfaces are obtained with an improved algorithm that uses both the high-resolution T1w and T2w images. Initial pial surfaces are generated from the high-resolution _PreFreeSurfer_ bias-field corrected T1w image with permissive variable sigma. This tends to include large amounts of dura and blood vessels and may cause the pial surface not to properly follow sulcal fundi, but it reduces the probability of excluding lightly myelinated gray matter. To remove the dura and blood vessels, the pial surface is eroded using the T2w image. Both dura and blood vessels are very different in intensity from gray matter in the T2w image, though they are close to isointense in the T1w image.
+
+- Normalize T1w and T2w image **T1w_hires.nii.gz** and **T2w_hires.nii.gz** to a standard mean white matter intensity for generating high-resolution pial surface . The results are saved as **T1w_hires.norm.mgz** and **T2w_hires.norm.mgz**.
+- Generate initial pial surfaces (preT2/pass1) with permissive variable sigma (including intensities 4 sigmas above and below the gray matter mean intensity, versus the standard setting of 3 sigmas) to capture all grey matter (and plenty of vessles/dura) using `mris_make_surfaces`. The results are saved as **lh.pial.preT2.pass1** and **rh.pial.preT2.pass1**.
+- Generate pial surfaces (postT2/pass1) with T2 adjustment since both dura and blood vessels are very different in intensity from gray matter in the T2w image. The results are saved as **lh.pial.postT2.pass1** and **rh.pial.postT2.pass1**.
+- Bring pial surfaces out of high-resolution space into the 1 mm (FS conformed) space. The results are saved as **lh.pial.postT2.pass1.conformed** and **rh.pial.postT2.pass1.conformed**.
+- Prepare the surface meshes derived from FreeSurfer, ensuring proper alignment with anatomical data, specifying the brain region associated with each surface, and creating additional data representations (signed distance volumes) for subsequent analyses. The results are saved as **lh.white.nii.gz**, **lh.pial.nii.gz**, **rh.white.nii.gz**, and **rh.pial.nii.gz**
+- Generate the gray matter ribbon from the pial and white matter surface, whose centers lie between the two surfaces. The results are saved as **lh.ribbon.nii.gz**, **rh.ribbon.nii.gz**, and **ribbon.nii.gz**
+- Smooth the gray matter ribbon using a Gaussian kernel with sigma of 5. The result is saved as **ribbon_s5.nii.gz**
+- Mask the normalize T1w image **T1w_hires.norm.nii.gz** with the gray matter ribbon to isolate the intensities within the gray matter ribbon. The result is saved as **T1w_hires.norm_ribbon.nii.gz**
+- Generate an inverse of the gray matter ribbon representing the areas outside of the gray matter ribbon. The result is saved as **ribbon_inv.nii.gz**
+- Create myelin content map by dividing the normalized T1w image within the ribbon **T1w_hires.norm_ribbon.nii.gz** by the smoothed version of the gray matter ribbon and then dividing by the mean intensity value. The result is saved as **T1w_hires.norm_ribbon_myelin.nii.gz**
+-  Create a binary mask for the white matter by thresholding and inverting the white matter surfaces. The result is saved as **white.nii.gz**
+- Refine the myelin content map by dilating it to gray matter regions. The result is saved as **T1w_hires.norm.grey_myelin.nii.gz**
+- Perform normalization of the T1w image by the myelin content map within the gray matter ribbon **T1w_hires.norm_ribbon_myelin.nii.gz** and myelin content map within the gray matter **T1w_hires.norm_grey_myelin.nii.gz**. This process perform spatial highpass filtering, removing the low-frequency effects of differences in myelin content across the image while keeping the high-frequency effects of opposing cortical pial surfaces and radial intracortical contrast. The results are saved as **T1w_hires.greynorm_ribbon.nii.gz** and **T1w_hires.greynorm.nii.gz**
+- Generate pial surfaces (preT2/pass2) with much more restrictive Gaussian parameters (2 sigmas above and below the gray matter mean intensity) using spatially highpass filtered T1w image **T1w_hires.greynorm**  without T2 adjustment. The results are saved as **lh.pial.preT2.pass2** and **rh.pial.preT2.pass2**.
+- Generate final pial surfaces (postT2/pass2) with T2 adjustment to remove any dura and blood vessels. The results are saved as **lh.pial.postT2.pass2** and **rh.pial.postT2.pass2**.
+- Bring the final pial surfaces out of high-resolution space into the 1 mm (FS conformed) space. The results are saved as **lh.pial.postT2.pass1.conformed** and **rh.pial.postT2.pass1.conformed**.
+- Perform cleanup by removing intermediate files generated during the first pass **lh.pial.nii.gz** and **rh.pial.nii.gz**. Create a new directory named **ribbon.postT2.pass1** and move all the ribbon related files generated following the first pass **lh.ribbon.nii.gz**, **rh.ribbon.nii.gz**, **ribbon.nii.gz**, **ribbon_s5.nii.gz**, **T1w_hires.norm_ribbon.nii.gz**, **ribbon_inv.nii.gz**, **T1w_hires.norm_ribbon_myelin.nii.gz**, **dilribbon_inv.nii.gz** and **T1w_hires.greynorm_ribbon.nii.gz** into the directory.
+
+
+```mermaid
+flowchart  TD
+    subgraph Freesurfer
+	    subgraph label
+            lh.aparc.annot
+            rh.aparc.annot
+
+	    end
+        subgraph mri
+            T1_hires.nii.gz --> |Normalization|T1_hires.norm.mgz 
+            T2_hires.nii.gz --> |Normalization|T2_hires.norm.mgz
+            aseg.hires.mgz
+            wm.hires.mgz
+            T1_hires.norm.mgz
+            T1_hires.norm.mgz --> |Masked|T1w_hires.norm_ribbon.nii.gz
+            T1w_hires.norm.mgz --> |Create myelin content map|T1w_hires.norm_ribbon_myelin.nii.gz
+            T1w_hires.norm_ribbon_myelin.nii.gz --> |Dilation|T1w_hires.norm.grey_myelin.nii.gz
+            T1w_hires.norm.mgz --> |Normalization|T1w_hires.greynorm_ribbon.nii.gz
+            T1w_hires.norm.mgz --> |Normalization|T1w_hires.greynorm.nii.gz
+            T1w_hires.norm_ribbon_myelin.nii.gz --> T1w_hires.greynorm_ribbon.nii.gz
+            T1w_hires.norm.grey_myelin.nii.gz --> T1w_hires.greynorm.nii.gz
+            T1w_hires.greynorm.nii.gz --> |Convert to MGZ|T1w_hires.greynorm.mgz
+            white.nii.gz
+            subgraph transforms
+                1mm2hires.dat
+            end
+        end
+	    subgraph surf
+            white.deformed --> lh.pial.preT2.pass1
+            white.deformed --> rh.pial.preT2.pass1
+            lh.pial.preT2.pass1 --> |T2 adjustment|lh.pial.postT2.pass1
+            rh.pial.preT2.pass1 --> |T2 adjustment|rh.pial.postT2.pass1
+            lh.pial.postT2.pass1 --> |Transformation to 1mm space|lh.pial.postT2.pass1.conformed
+            rh.pial.postT2.pass1 --> |Transformation to 1mm space|rh.pial.postT2.pass1.conformed
+            lh.white.mgz --> |Preparing surface|lh.white.nii.gz
+            lh.pial.mgz --> |Preparing surface|lh.pial.nii.gz
+            rh.white.mgz --> |Preparing surface|rh.white.nii.gz
+            rh.pial.mgz --> |Preparing surface|rh.pial.nii.gz
+            lh.white.nii.gz --> |Create gray matter ribbon|lh.ribbon.nii.gz
+            lh.pial.nii.gz --> |Create gray matter ribbon|lh.ribbon.nii.gz
+            rh.white.nii.gz --> |Create gray matter ribbon|rh.ribbon.nii.gz
+            rh.pial.nii.gz --> |Create gray matter ribbon|rh.ribbon.nii.gz  
+            lh.ribbon.nii.gz --> |Merge|ribbon.nii.gz
+            rh.ribbon.nii.gz --> |Merge|ribbon.nii.gz
+            ribbon.nii.gz --> |Smoothing|ribbon_s5.nii.gz
+            ribbon.nii.gz --> |Invert|ribbon_inv.nii.gz
+            lh.pial.preT2.pass2 --> |T2 adjustment|lh.pial.postT2.pass2
+            rh.pial.preT2.pass2 --> |T2 adjustment|rh.pial.postT2.pass2
+            lh.pial.postT2.pass2 --> |Transformation to 1mm space|lh.pial
+            rh.pial.postT2.pass2 --> |Transformation to 1mm space|rh.pial
+                 
+        end
+    end
+    aseg.hires.mgz --> lh.pial.preT2.pass1
+    wm.hires.mgz --> lh.pial.preT2.pass1
+    T1_hires.norm.mgz --> |Generate initial pial surface|lh.pial.preT2.pass1
+    aseg.hires.mgz --> rh.pial.preT2.pass1
+    wm.hires.mgz --> rh.pial.preT2.pass1
+    T1_hires.norm.mgz --> |Generate initial pial surface|rh.pial.preT2.pass1
+    ribbon.nii.gz --> |Masked|T1w_hires.norm_ribbon.nii.gz
+    ribbon_s5.nii.gz --> T1w_hires.norm_ribbon_myelin.nii.gz
+    lh.white.nii.gz --> |Create white matter mask|white.nii.gz
+    rh.white.nii.gz --> |Create white matter mask|white.nii.gz
+    T1w_hires.greynorm.mgz --> |Regenerate pial surface|lh.pial.preT2.pass2
+    T1w_hires.greynorm.mgz --> |Regenerate pial surface|rh.pial.preT2.pass2
+```
+
+
+
+	
