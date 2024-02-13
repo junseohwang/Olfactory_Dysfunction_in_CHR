@@ -701,7 +701,7 @@ Processing subject: "Subject"
 "Subject" Diffusion Basic Preprocessing : Copying raw data to working directory
 
 ```
-```
+```mermaid
 flowchart  TD
     subgraph Preprocess_Diffusion
         subgraph data
