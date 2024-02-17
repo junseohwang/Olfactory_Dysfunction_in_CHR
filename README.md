@@ -801,3 +801,81 @@ flowchart  TD
             end
     end
 ```
+
+### 2. Extract b0 image and create index file for eddy/topup
+
+```mermaid
+flowchart  TD
+    subgraph Preprocess_Diffusion
+        subgraph rawdata
+            RL_BLIP_input.nii.gz --> |Extract b0 images|Pos_b0_0000.nii.gz
+            RL_BLIP_input.nii.gz --> acqparams.txt
+            RL_BLIP_input.nii.gz --> extractedb0.txt
+            RL_BLIP_input.nii.gz --> series_index.txt
+            
+            LR_BLIP_input.nii.gz --> |Extract b0 images|Neg_b0_0000.nii.gz
+            LR_BLIP_input.nii.gz --> acqparams.txt
+            LR_BLIP_input.nii.gz --> extractedb0.txt
+            LR_BLIP_input.nii.gz --> series_index.txt
+            LR_EMPTY_B1000_input.nii.gz --> |Extract b0 images|Neg_b0_0001.nii.gz
+            LR_EMPTY_B1000_input.nii.gz --> acqparams.txt
+            LR_EMPTY_B1000_input.nii.gz --> extractedb0.txt
+            LR_EMPTY_B1000_input.nii.gz --> series_index.txt
+            LR_EMPTY_B2000_input.nii.gz --> |Extract b0 images|Neg_b0_0002.nii.gz
+            LR_EMPTY_B2000_input.nii.gz --> acqparams.txt
+            LR_EMPTY_B2000_input.nii.gz --> extractedb0.txt
+            LR_EMPTY_B2000_input.nii.gz --> series_index.txt
+            LR_EMPTY_B3000_input.nii.gz --> |Extract b0 images|Neg_b0_0003.nii.gz
+            LR_EMPTY_B3000_input.nii.gz --> acqparams.txt
+            LR_EMPTY_B3000_input.nii.gz --> extractedb0.txt
+            LR_EMPTY_B3000_input.nii.gz --> series_index.txt
+            Pos_b0_0000.nii.gz --> |Merge b0 images|Pos_b0.nii.gz
+            Neg_b0_0000.nii.gz --> |Merge b0 images|Neg_b0.nii.gz
+            Neg_b0_0001.nii.gz --> |Merge b0 images|Neg_b0.nii.gz
+            Neg_b0_0002.nii.gz --> |Merge b0 images|Neg_b0.nii.gz
+            Neg_b0_0003.nii.gz --> |Merge b0 images|Neg_b0.nii.gz
+            RL_BLIP_input.nii.gz --> |Merge images|Pos.nii.gz
+            RL_BLIP_input.bval --> |Merge bval|Pos.bval
+            RL_BLIP_input.bvec --> |Merge bvec|Pos.bvec
+            LR_BLIP_input.nii.gz --> |Merge images|Neg.nii.gz
+            LR_EMPTY_B1000_input.nii.gz --> |Merge images|Neg.nii.gz
+            LR_EMPTY_B2000_input.nii.gz --> |Merge images|Neg.nii.gz
+            LR_EMPTY_B3000_input.nii.gz --> |Merge images|Neg.nii.gz
+            LR_BLIP_input.bval --> |Merge bval|Neg.bval
+            LR_EMPTY_B1000_input.bval --> |Merge bval|Neg.bval
+            LR_EMPTY_B2000_input.bval --> |Merge bval|Neg.bval
+            LR_EMPTY_B3000_input.bval --> |Merge bval|Neg.bval
+            LR_BLIP_input.bvec --> |Merge bvec|Neg.bvec
+            LR_EMPTY_B1000_input.bvec --> |Merge bvec|Neg.bvec
+            LR_EMPTY_B2000_input.bvec --> |Merge bvec|Neg.bvec
+            LR_EMPTY_B3000_input.bvec --> |Merge bvec|Neg.bvec   
+            Pos.nii.gz --> |Check even number of slices|1[Pos.nii.gz]
+            Pos_b0.nii.gz --> |Check even number of slices|2[Pos_b0.nii.gz]
+            Neg.nii.gz --> |Check even number of slices|3[Neg.nii.gz]
+            Neg_b0.nii.gz --> |Check even number of slices|4[Neb_b0.nii.gz]     
+            end
+
+            subgraph topup
+                topup1[acqparams.txt]
+                topup2[extractedb0.txt]
+                topup3[Neg_b0.nii.gz]
+                topup4[Pos_b0.nii.gz]
+                topup5[Pos_Neg_b0.nii.gz]
+            end
+
+            subgraph eddy
+                eddy1[acqparams.txt] 
+                eddy2[Neg.bvec]
+                eddy3[Pos.bvec]
+                eddy4[Pos_Neg.bvecs]
+                eddy5[series_index.txt]
+                eddy6[Neg.bval]
+                eddy7[Pos.bval]
+                eddy8[Pos_Neg.bvals]
+                eddy9[Pos_Neg.nii.gz]
+            end
+
+    end
+```     
+             
+           
