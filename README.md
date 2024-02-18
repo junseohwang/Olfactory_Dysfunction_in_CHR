@@ -877,5 +877,60 @@ flowchart  TD
 
     end
 ```     
-             
-           
+
+
+### 3. Topup
+The susceptibility-induced off-resonance fields present in diffusion-weighted spin-echo EPI images, cause distortions that can lead to geometric mismatches between structural and diffusion images. Also, the typically lengthy diffusion protocol and potential subject movement. Topup addresses this by estimating the susceptibility-induced field using acquisitions with differing acquisition parameters, such as opposing phase-encode blips. By maximizing the similarity of unwarped volumes through a Gauss-Newton optimization approach, topup estimates the distortion field and any movement between acquisitions. This distortion field is then utilized to correct EPI distortions, enhancing the accuracy of subsequent analysis.
+
+- Perform topup to estimate the susceptibility induced field using `topup` command. The inputs are
+	- `Pos_Neg_b0.nii.gz`: b0 images acquired with opposite phase-encode polarities,
+	- `acqparams.txt`: acquisition parameters text file
+	- `b02b0.cnf`: configuration file containing parameters optimized for registering a set of high-quality b=0 images
+	
+	The outputs are saved as:
+    -   `topup_Pos_Neg_b0_fieldcoef.nii.gz`: spline coefficients encoding the susceptibility off-resonance field
+    -   `topup_Pos_Neg_b0_movpar.txt`: text file containing movement parameters representing translations and rotations
+    -   `Pos_Neg_b0.topup_log`: Log file documenting the process.
+
+- Extract the first volume from both the positive `Pos_b0.nii.gz` and negative `Neg_b0.nii.gz` phase-encoded images. The outputs are saved as `Pos_b01.nii.gz` and `Neg_b01.nii.gz`.
+
+- Perform applytopup to create a distortion-corrected single b0 image. The inputs are
+	- `Pos_b01.nii.gz, Neg_b01.nii.gz`: first volume from positive and negative phase-encoded images, respectively, extracted in the previous step.
+    -  `acqparams.txt`: text file containing acquisition parameter information
+    -  `index`: Indices which specifies which rows of the acquisition parameter file corresponding to the input images.
+   -  `topup_Pos_Neg_b0_fieldcoef.nii.gz`: output from `topup`, containing correction fields for susceptibility-induced distortions.
+   - `topup_Pos_Neg_b0_movpar.txt`: output from `topup`, containing text file containing movement parameters.
+   
+	The outputs are saved as  `hifib0.nii.gz`, a single b0 image corrected for susceptibility-induced distortions.
+- Extract the brain and generate a binary brain mask with distortion-corrected b0 image `hifib0` using `bet` command. The outputs are saved as `nodif_brain.nii.gz`, which is the brain-extracted image, and `nodif_brain_mask.nii.gz`, which is the binary brain mask.
+
+Terminal output:
+```
+NOR_BCS001_LOY Diffusion Topup Processing : Perform Topup
+NOR_BCS001_LOY Diffusion Topup Processing : Perform Applytopup
+NOR_BCS001_LOY Diffusion Topup Processing : Perform BET on Applytopup Output
+```
+```mermaid
+flowchart  TD
+    subgraph Preprocess_Diffusion
+
+            subgraph topup
+                topup1[acqparams.txt] --> |Perform topup|topup_Pos_Neg_b0_fieldcoef.nii.gz
+                topup1[acqparams.txt] --> |Perform topup|topup_Pos_Neg_b0_movpar.txt
+                topup1[acqparams.txt] --> |Perform topup|Pos_Neg_b0.topup_log
+                topup2[extractedb0.txt]
+                topup3[Neg_b0.nii.gz] --> |Extract the first volume|Neg_b01.nii.gz
+                topup4[Pos_b0.nii.gz] --> |Extract the first volume|Pos_b01.nii.gz
+                topup5[Pos_Neg_b0.nii.gz] --> |Perform topup|topup_Pos_Neg_b0_fieldcoef.nii.gz
+                topup5[Pos_Neg_b0.nii.gz] --> |Perform topup|topup_Pos_Neg_b0_movpar.txt
+                topup5[Pos_Neg_b0.nii.gz] --> |Perform topup|Pos_Neg_b0.topup_log
+                topup_Pos_Neg_b0_fieldcoef.nii.gz --> |Perform applytopup|hifib0.nii.gz
+                topup_Pos_Neg_b0_movpar.txt --> |Perform applytopup|hifib0.nii.gz
+                topup1[acqparams.txt] --> |Perform applytopup|hifib0.nii.gz
+                Neg_b01.nii.gz --> |Perform applytopup|hifib0.nii.gz
+                Pos_b01.nii.gz --> |Perform applytopup|hifib0.nii.gz
+                hifib0.nii.gz --> |Brain extraction|nodif_brain.nii.gz
+                hifib0.nii.gz --> |Brain extraction|nodif_brain_brain.nii.gz
+            end
+    end
+```           
