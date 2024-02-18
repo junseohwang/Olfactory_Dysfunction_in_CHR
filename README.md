@@ -880,7 +880,7 @@ flowchart  TD
 
 
 ### 3. Topup
-The susceptibility-induced off-resonance fields present in diffusion-weighted spin-echo EPI images, cause distortions that can lead to geometric mismatches between structural and diffusion images. Also, the typically lengthy diffusion protocol and potential subject movement. Topup addresses this by estimating the susceptibility-induced field using acquisitions with differing acquisition parameters, such as opposing phase-encode blips. By maximizing the similarity of unwarped volumes through a Gauss-Newton optimization approach, topup estimates the distortion field and any movement between acquisitions. This distortion field is then utilized to correct EPI distortions, enhancing the accuracy of subsequent analysis.
+The susceptibility-induced off-resonance fields present in diffusion-weighted spin-echo EPI images, cause distortions that can lead to geometric mismatches between structural and diffusion images. Also, the typically lengthy diffusion protocol and potential subject movement. Topup addresses this by estimating the susceptibility-induced field using acquisitions with differing acquisition parameters, such as opposing phase-encode blips. By maximizing the similarity of unwarped volumes through a Gauss-Newton optimization approach, topup estimates the distortion field and any movement between acquisitions.
 
 - Perform topup to estimate the susceptibility induced field using `topup` command. The inputs are
 	- `Pos_Neg_b0.nii.gz`: b0 images acquired with opposite phase-encode polarities,
