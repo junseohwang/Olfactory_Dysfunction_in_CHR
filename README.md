@@ -1012,4 +1012,10 @@ flowchart  TD
              
            
 ```
+### 4. Gradient nonlinearity distortion correction
+- Not performing gradient nonlinearity distortion correction
 
+Terminal output:
+```
+NOR_BCS001_LOY Diffusion Post Eddy Processing : Not correcting for gradient nonlinearities
+```
