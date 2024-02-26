@@ -933,4 +933,83 @@ flowchart  TD
                 hifib0.nii.gz --> |Brain extraction|nodif_brain_brain.nii.gz
             end
     end
-```           
+```
+
+### 3. Eddy
+
+- Copy the brain mask file **nodif_brain_mask.nii.gz** from topup directory
+
+- Perform eddy to correct eddy-current-induced distortion and head motion using `eddy_Cuda10.2` command. The GPU-enabled version of `eddy` was used. The inputs are
+	- `Pos_Neg`
+	- `nodif_brain_mask`: brain mask
+	- series_index.txt
+	- `acqparams.txt`: acquisition parameter file 
+	- `Pos_Neg.bvecs`
+	- `Pos_Neg.bvals`
+	- `topup_Pos_Neg_b0`: correction field from Topup
+	
+	The outputs are saved as:
+	- eddy_unwarped_images.nii.gz: main output file containing the corrected diffusion-weighted images (DWIs) after correction for eddy currents, subject motion, and susceptibility-induced distortions.
+	- eddy_unwarped_images.eddy_parameters: a text file containing parameters related to subject movement and eddy current-induced fields for each volume in the DWIs. The parameters include translations and rotations representing subject movement, as well as parameters related to eddy current-induced distortions
+	- eddy_unwarped_images.eddy_values_of_all_input_parameters: a text file containing a comprehensive list of all input parameters used for the eddy
+	- eddy_unwarped_images.eddy_rotated_bvecs: a file contains the rotated b-vectors, which are the directions of diffusion weighting, corrected for subject motion.
+	- eddy_unwarped_images.eddy_movement_rms: A text file summarizing the total movement in each volume by calculating the root mean square (RMS) displacement relative to the first volume and the previous volume.
+	- eddy_unwarped_images.eddy_restricted_movement_rms: Similar to the movement RMS file, but disregarding translation in the phase-encoding direction to avoid ambiguity between eddy currents and subject movement.
+	- eddy_unwarped_images.eddy_post_eddy_shell_alignment_parameters: This text file contains rigid body movement parameters between different shells estimated by a post-hoc mutual information-based registration.
+	- eddy_unwarped_images.eddy_post_eddy_shell_PE_translational_paramters: Another text file containing translation along the phase-encoding direction between different shells, estimated by a post-hoc mutual information-based registration.
+	- eddy_unwarped_images.eddy_outlier_report: A text file providing a report on outlier slices detected by eddy during processing.
+	- eddy_unwarped_images.eddy_outlier_map: Numeric matrices indicating outlier slices detected by eddy, denoting whether a scan-slice is an outlier or not.
+	- eddy_unwarped_images.eddy_outlier_n_stdev_map: Similar to the outlier map, but indicating how many standard deviations off the mean difference between observation and prediction an outlier is.
+	- eddy_unwarped_images.eddy_outlier_n_sqr_stdev_map: Similar to the outlier n_stdev map, but indicating standard deviations off the square root of the mean squared difference between observation and prediction.
+	- eddy_unwarped_images.eddy_command_txt: A text file containing the command-line parameters used to run the eddy tool.
+
+-   Check if DWI volumes are separated into positive and negative volumes. When tehy are separated, each set of volumes undergoes its own spatial transformation Perform Jacobian(JAC) resampling to combine transformed volumes 
+
+```
+NOR_BCS001_LOY Diffusion Eddy Processing : Perform Eddy
+          FSL version in use is 6.0.6.4 (for FSL 5.0.9 and above, can run GPU-enabled version of Eddy)
+
+...................Allocated GPU # 0...................
+NOR_BCS001_LOY Diffusion Post Eddy Processing : Not Combining Eddy Output (Combine Data Flag set to 2)
+```
+```mermaid
+
+flowchart  TD
+    subgraph Preprocess_Diffusion
+
+            subgraph topup
+                topup1[nodif_brain_mask.nii.gz]
+            end
+
+            subgraph eddy
+                eddy1[acqparams.txt] --> eddy10[eddy]
+                eddy2[Neg.bvec]
+                eddy3[Pos.bvec]
+                eddy4[Pos_Neg.bvecs] --> eddy10[eddy]
+                eddy5[series_index.txt] --> eddy10[eddy]
+                eddy6[Neg.bval]
+                eddy7[Pos.bval]
+                eddy8[Pos_Neg.bvals] --> eddy10[eddy]
+                eddy9[Pos_Neg.nii.gz] --> eddy10[eddy]
+                nodif_brain_mask.nii.gz --> eddy10[eddy]
+                eddy10 --> eddy_unwarped_images.nii.gz
+                eddy10 --> eddy_unwarped_images.eddy_parameters
+                eddy10 --> eddy_unwarped_images.eddy_values_of_all_input_parameters
+                eddy10 --> eddy_unwarped_images.eddy_rotated_bvecs
+                eddy10 --> eddy_unwarped_images.eddy_movement_rms
+                eddy10 --> eddy_unwarped_images.eddy_restricted_movement_rms
+                eddy10 --> eddy_unwarped_images.eddy_post_eddy_shell_alignment_parameters
+                eddy10 --> eddy_unwarped_images.eddy_post_eddy_shell_PE_translational_paramters
+                eddy10 --> eddy_unwarped_images.eddy_outlier_report
+                eddy10 --> eddy_unwarped_images.eddy_outlier_map
+                eddy10 --> eddy_unwarped_images.eddy_outlier_n_stdev_map
+                eddy10 --> eddy_unwarped_images.eddy_outlier_n_sqr_stdev_map
+                eddy10 --> eddy_unwarped_images.eddy_command_txt
+            end
+    end
+    topup1 --> |Copy|nodif_brain_mask.nii.gz
+        
+             
+           
+```
+
