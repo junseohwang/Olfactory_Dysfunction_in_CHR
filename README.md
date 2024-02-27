@@ -974,7 +974,7 @@ NOR_BCS001_LOY Diffusion Post Eddy Processing : Not Combining Eddy Output (Combi
 ```
 ```mermaid
 
-flowchart  TD
+flowchart  LR
     subgraph Preprocess_Diffusion
 
             subgraph topup
