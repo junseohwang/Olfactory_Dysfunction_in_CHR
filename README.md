@@ -1019,3 +1019,59 @@ Terminal output:
 ```
 NOR_BCS001_LOY Diffusion Post Eddy Processing : Not correcting for gradient nonlinearities
 ```
+
+
+### 5. Remove negative intensity values
+- Remove negative intensity values from `data.nii.gz`.
+- Perform brain extraction from `data.nii.gz`. The outputs are saved as `nodif_brain.nii.gz` and `nodif_brain_mask.nii.gz`.
+- Extract b0 volume from `data.nii.gz`. The output is saved as `nodif_brain.nii.gz`.
+
+Terminal output:
+```
+NOR_BCS001_LOY Diffusion Post Eddy Processing : Removing Negative Intensity Values from Final Eddy Data
+Warning: An input intended to be a single 3D volume has multiple timepoints. Input will be truncated to first volume, but this functionality is deprecated and will be removed in a future release.
+```
+```mermaid
+flowchart  TD
+
+subgraph  Preprocess_Diffusion
+
+  
+
+subgraph  data
+
+bvals
+
+bvecs
+
+data.nii.gz  -->  |remove negative intensity value|data1[data.nii.gz]
+
+data1  -->  |brain extraction|nodif_brain.nii.gz
+
+data1  -->  |brain extraction|nodif_brain_mask.nii.gz
+
+data1  -->  |extract b0 volume|nodif.nii.gz
+
+end
+
+  
+
+subgraph  eddy
+
+eddy4[Pos_Neg.bvecs]
+
+eddy8[Pos_Neg.bvals]
+
+eddy1[eddy_unwarped_images.nii.gz]
+
+
+end
+
+end
+
+eddy4  -->  |copy|bvecs
+
+eddy8  -->  |copy|bvals
+
+eddy1  -->  |copy|data.nii.gz
+```
