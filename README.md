@@ -1,4 +1,4 @@
-# Olfactory Dysfunction in Clinical High-Risk for Psychosis: Structural Connectivity
+# Olfactory Dysfunction in Individuals at Clinical High Risk for Psychosis: A Study on Structural Connectivity within the Olfactory Network
 *Olfactory_Dysfunction_in_CHR* repository is developed by Jun Seo Hwang.
 -   Jun Seo Hwang,  [junseo97@snu.ac.kr](mailto:junseo97@snu.ac.kr)
 
