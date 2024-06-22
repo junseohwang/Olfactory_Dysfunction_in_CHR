@@ -6,8 +6,8 @@
 - FSL
 - Freesurfer(ver 5.3.0)
 - Pipeline-master
-- workbench
-- raw data directory
+- Workbench
+- Raw Data Directory
 
 ## Raw Data Structure
 
