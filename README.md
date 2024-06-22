@@ -12,7 +12,7 @@
 ## Raw Data Structure
 
 ```
-── working directory
+── Working directory
    ├── subject_01
    │   ├── DTI_B1000
    │   │   ├── DTI_B1000.nii.gz
@@ -44,7 +44,7 @@
    │
    ├── Pipelines-master
    │
-   └── workbench
+   └── Workbench
 ```
 
 
